@@ -45,24 +45,75 @@ const userIcon = new L.Icon({
   className: 'user-marker'
 });
 
-// Component to handle map centering
-const MapCenterController = ({ center, zoom }) => {
+// Component to handle map centering with smooth animation
+const MapCenterController = ({ center, zoom, animateToIncident }) => {
   const map = useMap();
   
   useEffect(() => {
     if (center && center[0] !== 0 && center[1] !== 0) {
-      map.setView(center, zoom);
+      if (animateToIncident) {
+        // Smooth animation to the center with higher zoom
+        map.flyTo(center, zoom || 15, {
+          duration: 1.2, // Animation duration in seconds
+          easeLinearity: 0.2,
+          animate: true
+        });
+      } else {
+        map.setView(center, zoom);
+      }
     }
-  }, [map, center, zoom]);
+  }, [map, center, zoom, animateToIncident]);
   
   return null;
 };
 
-const IncidentMap = ({ incidents = [], volunteerLocation = null, userLocation = null, onIncidentClick = null, height = '400px' }) => {
+// Component to handle incident focus animation
+const IncidentFocusController = ({ focusIncident, onAnimationComplete }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (focusIncident && focusIncident.location?.coordinates) {
+      const [lng, lat] = focusIncident.location.coordinates;
+      
+      // Fly to incident location with smooth animation
+      map.flyTo([lat, lng], 17, {
+        duration: 1.8, // 1.8 second animation
+        easeLinearity: 0.15, // Smoother easing
+        animate: true
+      });
+      
+      // Call completion callback after animation
+      const timer = setTimeout(() => {
+        if (onAnimationComplete) {
+          onAnimationComplete();
+        }
+      }, 1800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [map, focusIncident, onAnimationComplete]);
+  
+  return null;
+};
+
+const IncidentMap = ({ 
+  incidents = [], 
+  volunteerLocation = null, 
+  userLocation = null, 
+  onIncidentClick = null, 
+  height = '400px',
+  focusIncident = null,
+  onAnimationComplete = null,
+  animateToLocation = false
+}) => {
   const mapRef = useRef(null);
   
   // Determine the best center and zoom
   const getMapCenter = () => {
+    if (focusIncident && focusIncident.location?.coordinates) {
+      const [lng, lat] = focusIncident.location.coordinates;
+      return [lat, lng];
+    }
     if (volunteerLocation && volunteerLocation[0] !== 0 && volunteerLocation[1] !== 0) {
       return volunteerLocation;
     }
@@ -73,7 +124,7 @@ const IncidentMap = ({ incidents = [], volunteerLocation = null, userLocation = 
   };
   
   const mapCenter = getMapCenter();
-  const defaultZoom = (volunteerLocation || userLocation) ? 13 : 10;
+  const defaultZoom = focusIncident ? 16 : (volunteerLocation || userLocation) ? 13 : 10;
 
   return (
     <div style={{ height, width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
@@ -84,7 +135,15 @@ const IncidentMap = ({ incidents = [], volunteerLocation = null, userLocation = 
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
       >
-        <MapCenterController center={mapCenter} zoom={defaultZoom} />
+        <MapCenterController 
+          center={mapCenter} 
+          zoom={defaultZoom} 
+          animateToIncident={animateToLocation}
+        />
+        <IncidentFocusController 
+          focusIncident={focusIncident}
+          onAnimationComplete={onAnimationComplete}
+        />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -132,27 +191,48 @@ const IncidentMap = ({ incidents = [], volunteerLocation = null, userLocation = 
                 click: () => onIncidentClick(incident)
               } : {}}
             >
-              <Popup>
-                <div>
-                  <strong>{incident.title}</strong>
-                  <br />
-                  <span className="text-sm text-gray-600">{incident.description}</span>
-                  <br />
-                  <span className={`text-xs px-2 py-1 rounded mt-2 inline-block ${
-                    incident.priority === 'critical' ? 'bg-red-100 text-red-800' :
-                    incident.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                    incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {incident.priority} priority
-                  </span>
+              <Popup maxWidth={300} minWidth={250}>
+                <div className="space-y-2">
+                  <div className="font-bold text-lg text-gray-900">{incident.title}</div>
+                  <p className="text-sm text-gray-600 leading-relaxed">{incident.description}</p>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      incident.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                      incident.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                      incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      🚨 {incident.priority.toUpperCase()} PRIORITY
+                    </span>
+                    
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      incident.status === 'reported' ? 'bg-gray-100 text-gray-800' :
+                      incident.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {incident.status.replace('_', ' ').toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  {incident.assignedVolunteer && (
+                    <div className="bg-blue-50 p-2 rounded text-xs">
+                      <strong>👨‍⚕️ Volunteer Assigned:</strong><br/>
+                      {incident.assignedVolunteer.name}
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-gray-500 border-t pt-2">
+                    📅 Reported: {new Date(incident.createdAt).toLocaleString()}
+                  </div>
+                  
                   {onIncidentClick && (
-                    <div className="mt-2">
+                    <div className="pt-2 border-t">
                       <button
                         onClick={() => onIncidentClick(incident)}
-                        className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        className="w-full text-xs bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition-colors font-medium"
                       >
-                        View Details
+                        🔍 Focus on This Incident
                       </button>
                     </div>
                   )}

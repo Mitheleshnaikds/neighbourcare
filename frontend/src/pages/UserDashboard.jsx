@@ -23,6 +23,9 @@ const UserDashboard = () => {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [showVolunteerDetails, setShowVolunteerDetails] = useState(null);
   const [volunteerLocation, setVolunteerLocation] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [focusedIncident, setFocusedIncident] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     loadIncidents();
@@ -129,6 +132,48 @@ const UserDashboard = () => {
     }));
   };
 
+  // Handle map zoom to incident with animation
+  const handleZoomToIncident = (incident) => {
+    if (!incident.location?.coordinates) {
+      toast.error('Incident location not available');
+      return;
+    }
+    
+    setShowMap(true);
+    setIsAnimating(true);
+    setFocusedIncident(incident);
+    
+    // Show success toast
+    toast.success(`Zooming to incident: ${incident.title}`, {
+      duration: 2000,
+      icon: '🗺️'
+    });
+    
+    // Auto-hide the focused incident after animation
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 2200);
+  };
+
+  // Handle animation completion
+  const handleAnimationComplete = () => {
+    setIsAnimating(false);
+    if (focusedIncident) {
+      toast.success(`📍 Focused on: ${focusedIncident.title}`, {
+        duration: 1500,
+        icon: '🎯'
+      });
+    }
+  };
+
+  // Toggle map view
+  const toggleMapView = () => {
+    setShowMap(!showMap);
+    if (!showMap) {
+      setFocusedIncident(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -145,13 +190,26 @@ const UserDashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900">Emergency Dashboard</h1>
           <p className="text-gray-600">Report emergencies and track their status</p>
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="btn-danger flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Report Emergency
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={toggleMapView}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              showMap 
+                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <MapPin className="w-4 h-4 mr-2" />
+            {showMap ? 'Hide Map' : 'Show Map'}
+          </button>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="btn-danger flex items-center"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Report Emergency
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -201,6 +259,64 @@ const UserDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Map View */}
+      {showMap && (
+        <div className="card">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium text-gray-900">
+              {focusedIncident ? `Viewing: ${focusedIncident.title}` : 'Incidents Map'}
+            </h2>
+            <div className="flex items-center space-x-3">
+              {isAnimating && (
+                <div className="flex items-center text-blue-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  <span className="text-sm">Zooming to incident...</span>
+                </div>
+              )}
+              {focusedIncident && !isAnimating && (
+                <button
+                  onClick={() => setFocusedIncident(null)}
+                  className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
+                >
+                  Clear Focus
+                </button>
+              )}
+            </div>
+          </div>
+          <IncidentMap
+            incidents={incidents}
+            userLocation={user.location?.coordinates ? [user.location.coordinates[1], user.location.coordinates[0]] : null}
+            focusIncident={focusedIncident}
+            onAnimationComplete={handleAnimationComplete}
+            animateToLocation={!!focusedIncident}
+            onIncidentClick={(incident) => {
+              // Handle incident click with zoom animation
+              handleZoomToIncident(incident);
+            }}
+            height="500px"
+          />
+          <div className="mt-3 text-sm text-gray-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                  <span>Your Location</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
+                  <span>Incidents</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
+                  <span>Volunteers</span>
+                </div>
+              </div>
+              <span className="text-xs">Click on incidents to zoom and view details</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Incident Modal */}
       {showCreateForm && (
@@ -354,6 +470,23 @@ const UserDashboard = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-3">{incident.description}</p>
+                
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center mb-3">
+                  <button
+                    onClick={() => handleZoomToIncident(incident)}
+                    className="flex items-center text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
+                  >
+                    <MapPin className="w-3 h-3 mr-1" />
+                    View on Map
+                  </button>
+                  {incident.location?.coordinates && (
+                    <span className="text-xs text-gray-500">
+                      📍 Location Available
+                    </span>
+                  )}
+                </div>
+                
                 <div className="flex justify-between items-center text-sm text-gray-500">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1" />
