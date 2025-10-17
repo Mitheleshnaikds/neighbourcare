@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { incidentsAPI } from '../api';
 import { getCurrentLocation, formatDateTime, getStatusColor, getPriorityColor, capitalize } from '../utils';
@@ -6,6 +6,7 @@ import { AlertTriangle, MapPin, Clock, Plus, RefreshCw, X, Phone, Mail } from 'l
 import toast from 'react-hot-toast';
 import socketService from '../socket';
 import IncidentMap from '../components/IncidentMap';
+import VolunteerAvailability from '../components/VolunteerAvailability';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ const UserDashboard = () => {
   const [showMap, setShowMap] = useState(false);
   const [focusedIncident, setFocusedIncident] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     loadIncidents();
@@ -139,15 +142,34 @@ const UserDashboard = () => {
       return;
     }
     
+    // Make sure the map is visible
     setShowMap(true);
     setIsAnimating(true);
     setFocusedIncident(incident);
     
-    // Show success toast
-    toast.success(`Zooming to incident: ${incident.title}`, {
-      duration: 2000,
-      icon: '🗺️'
-    });
+    // Scroll to map after a brief delay to ensure it's rendered
+    setTimeout(() => {
+      mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    
+    // Show success toast with incident details
+    toast.success(
+      <div>
+        <div className="font-bold">📍 {incident.title}</div>
+        <div className="text-xs mt-1">{incident.description.substring(0, 50)}...</div>
+        <div className="text-xs mt-1">
+          Priority: <span className="font-semibold">{incident.priority.toUpperCase()}</span> | 
+          Status: <span className="font-semibold">{incident.status.replace('_', ' ').toUpperCase()}</span>
+        </div>
+      </div>, 
+      {
+        duration: 3000,
+        icon: '🗺️',
+        style: {
+          minWidth: '300px'
+        }
+      }
+    );
     
     // Auto-hide the focused incident after animation
     setTimeout(() => {
@@ -168,9 +190,12 @@ const UserDashboard = () => {
 
   // Toggle map view
   const toggleMapView = () => {
-    setShowMap(!showMap);
-    if (!showMap) {
+    const willShowMap = !showMap;
+    setShowMap(willShowMap);
+    if (willShowMap) {
       setFocusedIncident(null);
+      // Force map to re-render and zoom to user location
+      setMapKey(prev => prev + 1);
     }
   };
 
@@ -212,57 +237,67 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card">
-          <div className="flex items-center">
-            <AlertTriangle className="w-8 h-8 text-danger-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Reports</p>
-              <p className="text-2xl font-bold text-gray-900">{incidents.length}</p>
+      {/* Stats and Volunteer Availability */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Stats Cards */}
+        <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="card">
+              <div className="flex items-center">
+                <AlertTriangle className="w-8 h-8 text-danger-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Total Reports</p>
+                  <p className="text-2xl font-bold text-gray-900">{incidents.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center">
+                <Clock className="w-8 h-8 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Open</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {incidents.filter(i => i.status === 'open').length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center">
+                <RefreshCw className="w-8 h-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">In Progress</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {incidents.filter(i => i.status === 'in_progress').length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-success-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">✓</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Resolved</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {incidents.filter(i => i.status === 'resolved').length}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="card">
-          <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Open</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {incidents.filter(i => i.status === 'open').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <RefreshCw className="w-8 h-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {incidents.filter(i => i.status === 'in_progress').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-success-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">✓</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Resolved</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {incidents.filter(i => i.status === 'resolved').length}
-              </p>
-            </div>
-          </div>
+        
+        {/* Volunteer Availability */}
+        <div className="lg:col-span-1">
+          <VolunteerAvailability compact={true} />
         </div>
       </div>
 
       {/* Map View */}
       {showMap && (
-        <div className="card">
+        <div className="card" ref={mapRef}>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-gray-900">
               {focusedIncident ? `Viewing: ${focusedIncident.title}` : 'Incidents Map'}
@@ -285,6 +320,7 @@ const UserDashboard = () => {
             </div>
           </div>
           <IncidentMap
+            key={mapKey}
             incidents={incidents}
             userLocation={user.location?.coordinates ? [user.location.coordinates[1], user.location.coordinates[0]] : null}
             focusIncident={focusedIncident}

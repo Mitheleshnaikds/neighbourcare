@@ -50,6 +50,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/incidents', incidentRoutes);

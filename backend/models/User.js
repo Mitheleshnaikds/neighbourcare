@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  },
   lastSeen: {
     type: Date,
     default: Date.now

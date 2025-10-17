@@ -6,6 +6,7 @@ import { MapPin, Clock, AlertTriangle, CheckCircle, Play, RefreshCw, Navigation,
 import toast from 'react-hot-toast';
 import socketService from '../socket';
 import IncidentMap from '../components/IncidentMap';
+import VolunteerAvailabilityToggle from '../components/VolunteerAvailabilityToggle';
 
 const VolunteerDashboard = () => {
   const { user, updateLocation } = useAuth();
@@ -215,6 +216,9 @@ const VolunteerDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Availability Toggle */}
+      <VolunteerAvailabilityToggle />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

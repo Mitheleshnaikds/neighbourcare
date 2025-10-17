@@ -46,23 +46,28 @@ const userIcon = new L.Icon({
 });
 
 // Component to handle map centering with smooth animation
-const MapCenterController = ({ center, zoom, animateToIncident }) => {
+const MapCenterController = ({ center, zoom, animateToIncident, userLocation }) => {
   const map = useMap();
+  const hasInitialized = useRef(false);
   
   useEffect(() => {
-    if (center && center[0] !== 0 && center[1] !== 0) {
-      if (animateToIncident) {
-        // Smooth animation to the center with higher zoom
-        map.flyTo(center, zoom || 15, {
-          duration: 1.2, // Animation duration in seconds
-          easeLinearity: 0.2,
-          animate: true
-        });
-      } else {
-        map.setView(center, zoom);
+    if (animateToIncident && center && center[0] !== 0 && center[1] !== 0) {
+      // Smooth animation to the center with higher zoom
+      map.flyTo(center, zoom || 15, {
+        duration: 1.2,
+        easeLinearity: 0.2,
+        animate: true
+      });
+    } else if (!hasInitialized.current) {
+      // Initial load - zoom to user location or center
+      if (userLocation && userLocation[0] !== 0 && userLocation[1] !== 0) {
+        map.setView(userLocation, zoom || 14);
+      } else if (center && center[0] !== 0 && center[1] !== 0) {
+        map.setView(center, zoom || 13);
       }
+      hasInitialized.current = true;
     }
-  }, [map, center, zoom, animateToIncident]);
+  }, [map, center, zoom, animateToIncident, userLocation]);
   
   return null;
 };
@@ -139,6 +144,7 @@ const IncidentMap = ({
           center={mapCenter} 
           zoom={defaultZoom} 
           animateToIncident={animateToLocation}
+          userLocation={userLocation}
         />
         <IncidentFocusController 
           focusIncident={focusIncident}
@@ -187,23 +193,27 @@ const IncidentMap = ({
               key={incident._id}
               position={position}
               icon={incidentIcon}
-              eventHandlers={onIncidentClick ? {
-                click: () => onIncidentClick(incident)
-              } : {}}
+              eventHandlers={{
+                click: () => {
+                  if (onIncidentClick) {
+                    onIncidentClick(incident);
+                  }
+                }
+              }}
             >
-              <Popup maxWidth={300} minWidth={250}>
-                <div className="space-y-2">
-                  <div className="font-bold text-lg text-gray-900">{incident.title}</div>
+              <Popup maxWidth={320} minWidth={280} autoPan={true}>
+                <div className="space-y-3">
+                  <div className="font-bold text-lg text-gray-900 border-b pb-2">{incident.title}</div>
                   <p className="text-sm text-gray-600 leading-relaxed">{incident.description}</p>
                   
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-2">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       incident.priority === 'critical' ? 'bg-red-100 text-red-800' :
                       incident.priority === 'high' ? 'bg-orange-100 text-orange-800' :
                       incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-green-100 text-green-800'
                     }`}>
-                      🚨 {incident.priority.toUpperCase()} PRIORITY
+                      🚨 {incident.priority.toUpperCase()}
                     </span>
                     
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -217,8 +227,28 @@ const IncidentMap = ({
                   
                   {incident.assignedVolunteer && (
                     <div className="bg-blue-50 p-2 rounded text-xs">
-                      <strong>👨‍⚕️ Volunteer Assigned:</strong><br/>
-                      {incident.assignedVolunteer.name}
+                      <div className="font-semibold mb-1">👨‍⚕️ Volunteer Assigned:</div>
+                      <div className="ml-2">
+                        <div>Name: {incident.assignedVolunteer.name}</div>
+                        {incident.assignedVolunteer.email && (
+                          <div>Email: {incident.assignedVolunteer.email}</div>
+                        )}
+                        {incident.assignedVolunteer.phone && (
+                          <div>Phone: {incident.assignedVolunteer.phone}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {incident.reporter && (
+                    <div className="bg-gray-50 p-2 rounded text-xs">
+                      <div className="font-semibold mb-1">📋 Reporter:</div>
+                      <div className="ml-2">
+                        <div>Name: {incident.reporter.name || 'Unknown'}</div>
+                        {incident.reporter.email && (
+                          <div>Email: {incident.reporter.email}</div>
+                        )}
+                      </div>
                     </div>
                   )}
                   

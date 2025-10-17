@@ -303,4 +303,80 @@ router.put('/password', protect, async (req, res) => {
   }
 });
 
+// Get volunteer availability status
+router.get('/volunteers/availability', protect, async (req, res) => {
+  try {
+    const volunteers = await User.find({ 
+      role: 'volunteer',
+      isActive: true 
+    }).select('name location isAvailable lastSeen');
+
+    // Calculate online status (last seen within 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    const availabilityData = volunteers.map(volunteer => {
+      const isOnline = new Date(volunteer.lastSeen) > fiveMinutesAgo;
+      return {
+        id: volunteer._id,
+        name: volunteer.name,
+        isAvailable: volunteer.isAvailable,
+        isOnline,
+        status: volunteer.isAvailable && isOnline ? 'available' : 
+                volunteer.isAvailable && !isOnline ? 'offline' : 'unavailable',
+        lastSeen: volunteer.lastSeen,
+        hasLocation: !!(volunteer.location && volunteer.location.coordinates && 
+                       volunteer.location.coordinates[0] !== 0 && volunteer.location.coordinates[1] !== 0)
+      };
+    });
+
+    const summary = {
+      total: volunteers.length,
+      available: availabilityData.filter(v => v.status === 'available').length,
+      offline: availabilityData.filter(v => v.status === 'offline').length,
+      unavailable: availabilityData.filter(v => v.status === 'unavailable').length
+    };
+
+    res.json({
+      success: true,
+      summary,
+      volunteers: availabilityData
+    });
+  } catch (error) {
+    console.error('Get volunteer availability error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// Toggle volunteer availability (for volunteers only)
+router.put('/availability/toggle', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'volunteer') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only volunteers can toggle availability'
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    user.isAvailable = !user.isAvailable;
+    user.lastSeen = new Date();
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Availability ${user.isAvailable ? 'enabled' : 'disabled'}`,
+      isAvailable: user.isAvailable
+    });
+  } catch (error) {
+    console.error('Toggle availability error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 module.exports = router;
