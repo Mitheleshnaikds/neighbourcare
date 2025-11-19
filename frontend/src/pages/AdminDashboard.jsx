@@ -244,104 +244,180 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Incidents Table */}
+      {/* Incidents Responsive View */}
       <div className="card">
         <h2 className="text-lg font-medium text-gray-900 mb-4">
           Incidents ({filteredIncidents.length})
         </h2>
-        
         {filteredIncidents.length === 0 ? (
           <div className="text-center py-8">
             <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No incidents match the current filter</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Incident
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Priority
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Reported
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Response Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredIncidents.map((incident) => (
-                  <tr key={incident._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {incident.title}
-                        </div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {incident.description}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(incident.priority)}`}>
+          <>
+            {/* Mobile / Tablet Cards */}
+            <div className="space-y-4 lg:hidden">
+              {filteredIncidents.map((incident) => (
+                <div
+                  key={incident._id}
+                  className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm"
+                >
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                        {incident.title}
+                      </h3>
+                      <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">
+                        {incident.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center flex-wrap gap-2">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(
+                          incident.priority
+                        )}`}
+                      >
                         {capitalize(incident.priority)}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(incident.status)}`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(
+                          incident.status
+                        )}`}
+                      >
                         {capitalize(incident.status.replace('_', ' '))}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatRelativeTime(incident.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {incident.responseTimeMinutes ? `${incident.responseTimeMinutes}m` : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        {incident.status === 'open' && (
-                          <button
-                            onClick={() => handleStatusUpdate(incident._id, 'in_progress')}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Assign
-                          </button>
-                        )}
-                        {incident.status === 'in_progress' && (
-                          <button
-                            onClick={() => handleStatusUpdate(incident._id, 'resolved')}
-                            className="text-success-600 hover:text-success-900"
-                          >
-                            Resolve
-                          </button>
-                        )}
-                        {incident.status !== 'open' && (
-                          <button
-                            onClick={() => handleStatusUpdate(incident._id, 'open')}
-                            className="text-danger-600 hover:text-danger-900"
-                          >
-                            Reopen
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 mt-2">
+                    <div>{formatRelativeTime(incident.createdAt)}</div>
+                    <div>
+                      Response: {incident.responseTimeMinutes ? `${incident.responseTimeMinutes}m` : '-'}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {incident.status === 'open' && (
+                      <button
+                        onClick={() => handleStatusUpdate(incident._id, 'in_progress')}
+                        className="px-3 py-1 text-xs font-medium rounded bg-blue-600 text-white hover:bg-blue-700"
+                        aria-label="Assign incident"
+                      >
+                        Assign
+                      </button>
+                    )}
+                    {incident.status === 'in_progress' && (
+                      <button
+                        onClick={() => handleStatusUpdate(incident._id, 'resolved')}
+                        className="px-3 py-1 text-xs font-medium rounded bg-success-600 text-white hover:bg-success-700"
+                        aria-label="Resolve incident"
+                      >
+                        Resolve
+                      </button>
+                    )}
+                    {incident.status !== 'open' && (
+                      <button
+                        onClick={() => handleStatusUpdate(incident._id, 'open')}
+                        className="px-3 py-1 text-xs font-medium rounded bg-danger-600 text-white hover:bg-danger-700"
+                        aria-label="Reopen incident"
+                      >
+                        Reopen
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Incident
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Reported
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Response Time
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredIncidents.map((incident) => (
+                    <tr key={incident._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {incident.title}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                            {incident.description}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(incident.priority)}`}>
+                          {capitalize(incident.priority)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(incident.status)}`}>
+                          {capitalize(incident.status.replace('_', ' '))}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatRelativeTime(incident.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {incident.responseTimeMinutes ? `${incident.responseTimeMinutes}m` : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          {incident.status === 'open' && (
+                            <button
+                              onClick={() => handleStatusUpdate(incident._id, 'in_progress')}
+                              className="text-blue-600 hover:text-blue-900"
+                              aria-label="Assign incident"
+                            >
+                              Assign
+                            </button>
+                          )}
+                          {incident.status === 'in_progress' && (
+                            <button
+                              onClick={() => handleStatusUpdate(incident._id, 'resolved')}
+                              className="text-success-600 hover:text-success-900"
+                              aria-label="Resolve incident"
+                            >
+                              Resolve
+                            </button>
+                          )}
+                          {incident.status !== 'open' && (
+                            <button
+                              onClick={() => handleStatusUpdate(incident._id, 'open')}
+                              className="text-danger-600 hover:text-danger-900"
+                              aria-label="Reopen incident"
+                            >
+                              Reopen
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

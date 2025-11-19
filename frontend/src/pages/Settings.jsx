@@ -162,20 +162,21 @@ const Settings = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-8">Settings</h1>
       
       <div className="bg-white rounded-lg shadow-sm border">
         {/* Tab Navigation */}
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <div className="overflow-x-auto">
+            <nav className="inline-flex min-w-max gap-4 sm:gap-8 px-4 sm:px-6 -mb-px">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+                  className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -186,17 +187,18 @@ const Settings = () => {
                 </button>
               );
             })}
-          </nav>
+            </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Profile Tab */}
           {activeTab === 'profile' && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
-              <form onSubmit={handleProfileUpdate} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
+              <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name
@@ -205,7 +207,7 @@ const Settings = () => {
                       type="text"
                       value={profileData.name}
                       onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       required
                     />
                   </div>
@@ -218,7 +220,7 @@ const Settings = () => {
                       type="email"
                       value={profileData.email}
                       onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       required
                     />
                   </div>
@@ -231,7 +233,7 @@ const Settings = () => {
                       type="tel"
                       value={profileData.phone}
                       onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   
@@ -243,7 +245,7 @@ const Settings = () => {
                       type="text"
                       value={profileData.address}
                       onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>
@@ -251,7 +253,7 @@ const Settings = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                  className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {loading ? 'Saving...' : 'Save Changes'}
@@ -263,9 +265,9 @@ const Settings = () => {
           {/* Location Tab */}
           {activeTab === 'location' && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Location Settings</h2>
-              <form onSubmit={handleLocationUpdate} className="space-y-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Location Settings</h2>
+              <form onSubmit={handleLocationUpdate} className="space-y-4 sm:space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4 mb-4 sm:mb-6">
                   <div className="flex">
                     <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5 mr-3" />
                     <div>
@@ -280,7 +282,7 @@ const Settings = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Latitude
@@ -290,7 +292,7 @@ const Settings = () => {
                       step="any"
                       value={locationData.latitude}
                       onChange={(e) => setLocationData(prev => ({ ...prev, latitude: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="e.g., 40.7128"
                     />
                   </div>
@@ -304,7 +306,7 @@ const Settings = () => {
                       step="any"
                       value={locationData.longitude}
                       onChange={(e) => setLocationData(prev => ({ ...prev, longitude: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="e.g., -74.0060"
                     />
                   </div>
@@ -318,16 +320,16 @@ const Settings = () => {
                     type="text"
                     value={locationData.address}
                     onChange={(e) => setLocationData(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Your current address"
                   />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={getCurrentLocation}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="w-full sm:w-auto justify-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
                   >
                     Use Current Location
                   </button>
@@ -346,7 +348,7 @@ const Settings = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                  className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {loading ? 'Saving...' : 'Save Location'}
@@ -358,12 +360,12 @@ const Settings = () => {
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Notification Preferences</h2>
-              <div className="space-y-6">
-                <div className="space-y-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Notification Preferences</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-3 sm:space-y-4">
                   {Object.entries(notificationSettings).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between py-3 border-b border-gray-200">
-                      <div>
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-200">
+                      <div className="min-w-0">
                         <h3 className="text-sm font-medium text-gray-900">
                           {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                         </h3>
@@ -374,7 +376,7 @@ const Settings = () => {
                           {key === 'emergencyAlerts' && 'Receive urgent emergency alerts'}
                         </p>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer self-start sm:self-auto">
                         <input
                           type="checkbox"
                           checked={value}
@@ -393,7 +395,7 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => toast.success('Notification preferences saved')}
-                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Preferences
@@ -405,8 +407,8 @@ const Settings = () => {
           {/* Security Tab */}
           {activeTab === 'security' && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Change Password</h2>
-              <form onSubmit={handlePasswordUpdate} className="space-y-6 max-w-md">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Change Password</h2>
+              <form onSubmit={handlePasswordUpdate} className="space-y-4 sm:space-y-6 max-w-md">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Current Password
@@ -415,7 +417,7 @@ const Settings = () => {
                     type="password"
                     value={passwordData.currentPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                   />
                 </div>
@@ -428,7 +430,7 @@ const Settings = () => {
                     type="password"
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                     minLength={6}
                   />
@@ -442,7 +444,7 @@ const Settings = () => {
                     type="password"
                     value={passwordData.confirmPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                     minLength={6}
                   />
@@ -451,7 +453,7 @@ const Settings = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                  className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   {loading ? 'Updating...' : 'Update Password'}
