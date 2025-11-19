@@ -107,6 +107,8 @@ const IncidentMap = ({
   userLocation = null, 
   onIncidentClick = null, 
   height = '400px',
+  heightClass = '', // Tailwind height classes for responsive heights (e.g., "h-64 sm:h-80 md:h-96"). Overrides `height` when provided.
+  className = '',   // Additional classes for outer wrapper
   focusIncident = null,
   onAnimationComplete = null,
   animateToLocation = false
@@ -131,13 +133,17 @@ const IncidentMap = ({
   const mapCenter = getMapCenter();
   const defaultZoom = focusIncident ? 16 : (volunteerLocation || userLocation) ? 13 : 10;
 
+  // Compute wrapper props for responsive height support
+  const wrapperStyle = heightClass ? { width: '100%' } : { height, width: '100%' };
+  const wrapperClasses = `${heightClass || ''} ${className || ''}`.trim();
+
   return (
-    <div style={{ height, width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
+    <div className={wrapperClasses} style={wrapperStyle}>
       <MapContainer
         ref={mapRef}
         center={mapCenter}
         zoom={defaultZoom}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', minHeight: heightClass ? undefined : height, width: '100%' }}
         scrollWheelZoom={true}
       >
         <MapCenterController 

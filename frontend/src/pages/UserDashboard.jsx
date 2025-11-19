@@ -330,7 +330,8 @@ const UserDashboard = () => {
               // Handle incident click with zoom animation
               handleZoomToIncident(incident);
             }}
-            height="500px"
+            heightClass="h-64 sm:h-80 md:h-96 lg:h-[28rem]"
+            className="rounded-md overflow-hidden"
           />
           <div className="mt-3 text-sm text-gray-600">
             <div className="flex items-center justify-between">

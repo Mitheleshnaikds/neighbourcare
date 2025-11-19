@@ -172,12 +172,12 @@ const VolunteerDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Volunteer Dashboard</h1>
           <p className="text-gray-600">Respond to emergencies in your area</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowMap(!showMap)}
             className="btn-secondary flex items-center"
@@ -314,7 +314,8 @@ const VolunteerDashboard = () => {
             incidents={incidents}
             volunteerLocation={userLocation}
             onIncidentClick={(incident) => setSelectedIncident(incident)}
-            height="500px"
+            heightClass="h-64 sm:h-80 md:h-96 lg:h-[28rem]"
+            className="rounded-md overflow-hidden"
           />
         </div>
       )}
@@ -366,9 +367,9 @@ const VolunteerDashboard = () => {
 
       {/* Available Incidents */}
       <div className="card">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
           <h2 className="text-lg font-medium text-gray-900">Available Incidents</h2>
-          <button onClick={loadIncidents} className="btn-secondary text-sm">
+          <button onClick={loadIncidents} className="btn-secondary text-sm w-full sm:w-auto justify-center">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </button>

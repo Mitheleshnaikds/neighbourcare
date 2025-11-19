@@ -139,17 +139,17 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600">Monitor and manage all incidents</p>
         </div>
-        <div className="flex space-x-3">
-          <button onClick={exportData} className="btn-secondary flex items-center">
+        <div className="flex flex-wrap gap-2">
+          <button onClick={exportData} className="btn-secondary flex items-center justify-center w-full sm:w-auto">
             <Download className="w-4 h-4 mr-2" />
             Export Data
           </button>
-          <button onClick={loadIncidents} className="btn-primary flex items-center">
+          <button onClick={loadIncidents} className="btn-primary flex items-center justify-center w-full sm:w-auto">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </button>
@@ -223,10 +223,10 @@ const AdminDashboard = () => {
 
       {/* Filters */}
       <div className="card">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Filter className="w-5 h-5 text-gray-500" />
           <span className="text-sm font-medium text-gray-700">Filter by status:</span>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             {['all', 'open', 'in_progress', 'resolved'].map((status) => (
               <button
                 key={status}
